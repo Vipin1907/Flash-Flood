@@ -39,7 +39,7 @@ interface SidebarProps {
 }
 
 const navItems: { id: NavTab; label: string; icon: any; badge?: string }[] = [
-  { id: "landing", label: "Home / Input Console", icon: LayoutDashboard },
+  { id: "landing", label: "Home / Overview", icon: LayoutDashboard },
   { id: "weather-telemetry", label: "Weather & Telemetry", icon: CloudRain, badge: "Step 2" },
   { id: "dashboard", label: "Live Dashboard", icon: Layers, badge: "AI" },
   { id: "risk-map", label: "Risk Map", icon: Map },

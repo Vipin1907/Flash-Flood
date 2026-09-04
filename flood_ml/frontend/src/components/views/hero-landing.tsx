@@ -3,23 +3,27 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ShieldAlert,
-  Sparkles,
+  Menu,
+  Globe,
+  Sun,
+  Bell,
   ArrowRight,
-  Play,
-  Cpu,
-  Layers,
   MapPin,
+  Calendar,
   Clock,
-  Compass,
+  Search,
+  ChevronDown,
+  Info,
+  TrendingUp,
+  Map,
+  ShieldAlert,
+  Navigation,
+  Building2,
+  FileText,
   SlidersHorizontal,
   CloudLightning,
   SunMedium,
   CloudRain,
-  ChevronDown,
-  Activity,
-  CheckCircle2,
-  Menu,
 } from "lucide-react";
 import { FeatureInputs } from "../layout/top-filter-bar";
 import { cn } from "@/lib/utils";
@@ -45,11 +49,11 @@ interface HeroLandingProps {
 
 const locations = {
   Assam: {
-    districts: ["Cachar", "Karimganj", "Hailakandi", "Kamrup"],
+    districts: ["Cachar", "Karimganj", "Hailakandi", "Kamrup", "Dhubri"],
     catchments: ["A127 - Barak Basin", "Kushiyara Sub-basin", "Surma Valley"],
   },
   Uttarakhand: {
-    districts: ["Uttarkashi", "Chamoli", "Rudraprayag", "Pithoragarh"],
+    districts: ["Uttarkashi", "Chamoli", "Rudraprayag", "Pithoragarh", "Tehri Garhwal"],
     catchments: ["Upper Bhagirathi", "Alaknanda Basin", "Mandakini Valley"],
   },
 };
@@ -122,17 +126,20 @@ export function HeroLanding({
   mode,
   onModeChange,
 }: HeroLandingProps) {
-  const [villageArea, setVillageArea] = useState("Silchar Central / Annapurna Ghat");
+  const [lang, setLang] = useState<"en" | "hi">("en");
+  const [villageSearch, setVillageSearch] = useState("Silchar Central / Annapurna Ghat");
+  const [leadTime, setLeadTime] = useState("Next 3 Hours");
+  const [showAdvancedSliders, setShowAdvancedSliders] = useState(false);
 
   const handleStateSelect = (state: "Assam" | "Uttarakhand") => {
     const newDistrict = locations[state].districts[0];
     const newCatchment = locations[state].catchments[0];
     onLocationChange(state, newDistrict, newCatchment);
     if (state === "Assam") {
-      setVillageArea("Silchar Central / Annapurna Ghat");
+      setVillageSearch("Silchar Central / Annapurna Ghat");
       onFeaturesChange(scenarioPresets.high.features);
     } else {
-      setVillageArea("Dharali / Upper Bhagirathi Valley");
+      setVillageSearch("Dharali / Upper Bhagirathi Valley");
       onFeaturesChange(scenarioPresets.extreme.features);
     }
   };
@@ -144,402 +151,339 @@ export function HeroLanding({
     });
   };
 
-  const scrollToConsole = () => {
-    document.getElementById("prediction-console")?.scrollIntoView({ behavior: "smooth" });
+  const handleCheckRisk = () => {
+    onPredict(features, {
+      state: selectedState,
+      district: selectedDistrict,
+      catchment: selectedCatchment,
+    });
+    onViewTelemetry();
   };
 
   return (
-    <div className="min-h-screen flex flex-col text-slate-100 selection:bg-[#FF3B1D] selection:text-white">
-      {/* ── Top Navigation Bar (Contagion Style) ── */}
-      <header className="sticky top-0 z-40 bg-[#05070B]/90 backdrop-blur-xl border-b border-[#141A28] px-6 lg:px-12 py-4 flex items-center justify-between">
-        {/* Left: 3-Line Hamburger Menu Button + Brand */}
-        <div className="flex items-center gap-3">
+    <div className="min-h-screen flex flex-col bg-[#05070D] text-slate-100 selection:bg-[#FF5A1F] selection:text-white relative overflow-hidden font-sans">
+      {/* ── Background Mountain / Atmospheric Glow ── */}
+      <div
+        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-20 -z-10"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 50% 20%, rgba(255, 90, 31, 0.18) 0%, transparent 60%), linear-gradient(to bottom, #05070D 0%, rgba(5,7,13,0.7) 40%, #05070D 100%)",
+        }}
+      />
+
+      {/* ── Top Navigation Bar ── */}
+      <header className="sticky top-0 z-40 bg-[#05070D]/90 backdrop-blur-xl border-b border-[#141A29] px-6 lg:px-12 py-3.5 flex items-center justify-between">
+        {/* Left: 3-Line Hamburger Menu Button + Logo */}
+        <div className="flex items-center gap-4">
           <button
             onClick={onToggleSidebar}
-            className="p-2 rounded-xl bg-[#0B0E18] border border-[#181F30] text-slate-300 hover:text-white hover:border-[#FF3B1D]/40 transition-all flex items-center justify-center cursor-pointer shadow-sm group"
+            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
             title="Open Navigation Menu"
           >
-            <Menu className="w-5 h-5 text-slate-300 group-hover:text-[#FF3B1D] transition-colors" />
+            <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF3B1D]/15 border border-[#FF3B1D]/30">
-              <div className="w-3 h-3 rounded-full bg-[#FF3B1D] shadow-lg shadow-[#FF3B1D]/70 animate-pulse" />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-base font-black tracking-widest text-white uppercase">
-                PRAVAH
-              </span>
-              <span className="text-base font-black tracking-widest text-[#FF3B1D] uppercase">
-                AI.
-              </span>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-black tracking-widest text-white uppercase font-sans">
+              PRAVAH
+            </span>
+            <span className="text-xl font-black tracking-widest text-[#FF5A1F] uppercase font-sans">
+              AI
+            </span>
           </div>
         </div>
 
         {/* Center Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-400">
-          <a href="#how-it-works" className="hover:text-white transition-colors">How it Works</a>
-          <a href="#prediction-console" className="hover:text-white transition-colors">Prediction Console</a>
-          <a href="#agents" className="hover:text-white transition-colors">Agentic AI</a>
-          <button onClick={onOpenDashboard} className="hover:text-white transition-colors">Command Dashboard</button>
+        <nav className="hidden lg:flex items-center gap-8 text-xs font-semibold text-slate-300">
+          <a href="#how-it-works" className="hover:text-white transition-colors">
+            {lang === "en" ? "How It Works" : "यह कैसे काम करता है"}
+          </a>
+          <a href="#check-risk-console" className="hover:text-white transition-colors">
+            {lang === "en" ? "Prediction Console" : "पूर्वानुमान कंसोल"}
+          </a>
+          <a href="#agentic-ai" className="hover:text-white transition-colors">
+            {lang === "en" ? "Agentic AI" : "एजेंटिक एआई"}
+          </a>
+          <button onClick={onOpenDashboard} className="hover:text-white transition-colors cursor-pointer">
+            {lang === "en" ? "Command Dashboard" : "कमांड डैशबोर्ड"}
+          </button>
         </nav>
 
-        {/* Launch Dashboard Button */}
-        <button
-          onClick={onOpenDashboard}
-          className="flex items-center gap-2 bg-[#FF3B1D] hover:bg-[#E02E10] text-white px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider uppercase shadow-lg shadow-[#FF3B1D]/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-        >
-          <span>Launch Dashboard</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        {/* Right Nav Utilities */}
+        <div className="flex items-center gap-3">
+          {/* Language Toggle */}
+          <div className="flex items-center gap-1 bg-[#0E1322] border border-[#1C253B] rounded-full px-2.5 py-1 text-xs text-slate-300 font-medium">
+            <Globe className="w-3.5 h-3.5 text-slate-400" />
+            <button
+              onClick={() => setLang("en")}
+              className={cn("px-1 transition-colors cursor-pointer", lang === "en" ? "text-white font-bold" : "text-slate-500 hover:text-slate-300")}
+            >
+              English
+            </button>
+            <span className="text-slate-600">|</span>
+            <button
+              onClick={() => setLang("hi")}
+              className={cn("px-1 transition-colors cursor-pointer", lang === "hi" ? "text-[#FF5A1F] font-bold" : "text-slate-500 hover:text-slate-300")}
+            >
+              हिंदी
+            </button>
+          </div>
+
+          {/* Sun / Theme Button */}
+          <button className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer hidden sm:flex">
+            <Sun className="w-4 h-4" />
+          </button>
+
+          {/* Notification Bell */}
+          <div className="relative cursor-pointer hidden sm:flex">
+            <div className="p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+              <Bell className="w-4 h-4" />
+            </div>
+            <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full bg-[#FF5A1F] text-[9px] font-bold text-white flex items-center justify-center">
+              0
+            </span>
+          </div>
+
+          {/* Launch Dashboard Button */}
+          <button
+            onClick={onOpenDashboard}
+            className="flex items-center gap-1.5 bg-gradient-to-r from-[#FF5A1F] to-[#FF4500] hover:from-[#FF6A30] hover:to-[#FF5A1F] text-white px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg shadow-[#FF5A1F]/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          >
+            <span>{lang === "en" ? "LAUNCH DASHBOARD" : "डैशबोर्ड खोलें"}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </header>
 
-      {/* ── Hero Section (Contagion Style Massive Typography) ── */}
-      <section className="relative pt-16 pb-20 px-6 lg:px-12 flex flex-col items-center text-center overflow-hidden">
-        {/* Ambient background glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#FF3B1D]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
-
-        {/* Pill Badge */}
+      {/* ── Main Hero Section ── */}
+      <main className="flex-1 flex flex-col items-center justify-center pt-12 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto text-center w-full">
+        {/* Top Pill Badge */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#120B0A] border border-[#FF3B1D]/30 text-[#FF5A3D] text-[11px] font-mono font-semibold tracking-widest uppercase mb-8 shadow-sm"
+          transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#160E0A] border border-[#FF5A1F]/40 text-[#FF7A4D] text-[11px] font-mono font-bold tracking-wider uppercase mb-6 shadow-sm"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B1D] animate-ping" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF5A1F] animate-pulse" />
           <span>• FLASH FLOOD INTELLIGENCE & EARLY WARNING SYSTEM •</span>
         </motion.div>
 
-        {/* Massive Brand Headline */}
+        {/* Big Brand Title: PRAVAH AI */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex flex-col items-center justify-center font-black tracking-tighter leading-none mb-6 select-none"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="flex items-center justify-center gap-3 sm:gap-6 mb-4 select-none"
         >
-          <h1 className="text-6xl sm:text-8xl md:text-9xl text-white tracking-widest drop-shadow-2xl">
+          <h1 className="text-6xl sm:text-8xl md:text-9xl font-black text-white tracking-tight drop-shadow-2xl">
             PRAVAH
           </h1>
-          <div className="flex items-center text-7xl sm:text-9xl md:text-[140px] text-[#FF3B1D] -mt-2 sm:-mt-4">
-            <span>AI</span>
-            <span className="w-4 h-4 sm:w-6 sm:h-6 bg-[#38BDF8] ml-2 sm:ml-4 rounded-sm shadow-lg shadow-[#38BDF8]/60 animate-pulse" />
-          </div>
+          <h1 className="text-6xl sm:text-8xl md:text-9xl font-black text-[#FF5A1F] tracking-tight drop-shadow-[0_0_35px_rgba(255,90,31,0.5)]">
+            AI
+          </h1>
         </motion.div>
 
-        {/* Punchline from Reference Poster */}
+        {/* 3-Part Slogan: PREDICT EARLY. EXPLAIN CLEARLY. ACT SAFELY. */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="max-w-3xl mb-8 space-y-3"
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="text-lg sm:text-2xl md:text-3xl font-black tracking-wide mb-3 flex flex-wrap items-center justify-center gap-2"
         >
-          <p className="text-xl sm:text-2xl md:text-3xl font-black tracking-wide">
-            <span className="text-[#FF3B1D]">PREDICT EARLY.</span>{" "}
-            <span className="text-white">EXPLAIN CLEARLY.</span>{" "}
-            <span className="text-emerald-400">ACT SAFELY.</span>
-          </p>
-          <p className="text-sm sm:text-base text-slate-400 font-normal leading-relaxed max-w-2xl mx-auto">
-            We don't just predict flash floods — we explain the risk with native TreeSHAP,
-            draft bilingual SMS alerts with LangGraph & Gemini, and compute safe evacuation corridors with OpenStreetMap.
-          </p>
+          <span className="text-[#FF5A1F]">{lang === "en" ? "PREDICT EARLY." : "समय से पहले पूर्वानुमान."}</span>
+          <span className="text-white">{lang === "en" ? "EXPLAIN CLEARLY." : "स्पष्ट व्याख्या."}</span>
+          <span className="text-[#10B981]">{lang === "en" ? "ACT SAFELY." : "सुरक्षित कदम."}</span>
         </motion.div>
 
-        {/* Hero CTAs */}
+        {/* Description Subtext */}
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.25 }}
+          className="text-xs sm:text-sm md:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10"
+        >
+          {lang === "en"
+            ? "AI-powered flash flood prediction, real-time risk mapping, intelligent alerts, and safe route guidance — all in one platform."
+            : "एआई-संचालित फ़्लैश बाढ़ भविष्यवाणी, रीयल-टाइम जोखिम मानचित्रण, स्मार्ट अलर्ट और सुरक्षित निकासी मार्ग — सब एक मंच पर।"}
+        </motion.p>
+
+        {/* ── CARD: CHECK FLOOD RISK FOR YOUR AREA ── */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          id="check-risk-console"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-wrap items-center justify-center gap-4 mb-16"
+          className="w-full max-w-3xl rounded-3xl bg-[#090D18]/85 border border-[#FF5A1F]/35 p-6 sm:p-8 shadow-2xl backdrop-blur-2xl relative text-left"
         >
-          <button
-            onClick={scrollToConsole}
-            className="flex items-center gap-2 bg-[#FF3B1D] hover:bg-[#E02E10] text-white px-7 py-3.5 rounded-xl text-sm font-black tracking-wider uppercase shadow-xl shadow-[#FF3B1D]/35 transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
-          >
-            <span>Run AI Prediction</span>
-            <Play className="w-4 h-4 fill-white" />
-          </button>
-
-          <button
-            onClick={onOpenDashboard}
-            className="flex items-center gap-2 bg-[#0B0E18] hover:bg-[#121726] border border-[#181F30] hover:border-slate-500 text-slate-200 px-7 py-3.5 rounded-xl text-sm font-bold tracking-wider uppercase transition-all cursor-pointer"
-          >
-            <span>Open Command Dashboard</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </motion.div>
-
-        {/* ── 4 Big Contagion Metric Badges ── */}
-        <div className="w-full max-w-5xl grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-          {/* Stat 1 */}
-          <div className="bg-[#0B0E18]/90 border border-[#181F30] rounded-2xl p-6 relative overflow-hidden group hover:border-[#FF3B1D]/40 transition-all">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF3B1D]/40 to-transparent" />
-            <div className="text-3xl sm:text-4xl font-black text-[#FF3B1D] font-mono mb-1">
-              97%
-            </div>
-            <div className="text-xs font-bold text-white uppercase tracking-wider">
-              XGBoost Accuracy
-            </div>
-            <p className="text-[11px] text-slate-500 mt-1 font-mono">
-              Trained on Assam & Uttarakhand flood records
-            </p>
-          </div>
-
-          {/* Stat 2 */}
-          <div className="bg-[#0B0E18]/90 border border-[#181F30] rounded-2xl p-6 relative overflow-hidden group hover:border-yellow-500/40 transition-all">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-yellow-500/40 to-transparent" />
-            <div className="text-3xl sm:text-4xl font-black text-yellow-400 font-mono mb-1">
-              3-HOURS
-            </div>
-            <div className="text-xs font-bold text-white uppercase tracking-wider">
-              Early Lead Time
-            </div>
-            <p className="text-[11px] text-slate-500 mt-1 font-mono">
-              Actionable evacuation window before peak surge
-            </p>
-          </div>
-
-          {/* Stat 3 */}
-          <div className="bg-[#0B0E18]/90 border border-[#181F30] rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-500/40 transition-all">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
-            <div className="text-3xl sm:text-4xl font-black text-cyan-400 font-mono mb-1">
-              TREESHAP
-            </div>
-            <div className="text-xs font-bold text-white uppercase tracking-wider">
-              Explainable AI
-            </div>
-            <p className="text-[11px] text-slate-500 mt-1 font-mono">
-              Transparent C++ feature attribution drivers
-            </p>
-          </div>
-
-          {/* Stat 4 */}
-          <div className="bg-[#0B0E18]/90 border border-[#181F30] rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
-            <div className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono mb-1">
-              OSM-SAFE
-            </div>
-            <div className="text-xs font-bold text-white uppercase tracking-wider">
-              Safe Evacuation
-            </div>
-            <p className="text-[11px] text-slate-500 mt-1 font-mono">
-              Obstacle-weighted Dijkstra safe routes
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 1st Page Interactive Prediction Console ── */}
-      <section id="prediction-console" className="py-16 px-6 lg:px-12 bg-[#06080E] border-t border-[#141A28]">
-        <div className="max-w-5xl mx-auto">
-          {/* Section Header */}
-          <div className="text-center mb-10">
-            <span className="text-[11px] font-mono font-bold text-[#FF5A3D] bg-[#FF3B1D]/10 border border-[#FF3B1D]/25 px-3 py-1 rounded-full uppercase tracking-widest">
-              STEP 1: INTERACTIVE INPUT CONSOLE
+          {/* Card Header */}
+          <div className="flex items-center gap-2 mb-6">
+            <MapPin className="w-4 h-4 text-[#FF5A1F]" />
+            <span className="text-xs sm:text-sm font-black text-[#FF5A1F] uppercase tracking-wider font-sans">
+              {lang === "en" ? "CHECK FLOOD RISK FOR YOUR AREA" : "अपने क्षेत्र के लिए बाढ़ जोखिम की जाँच करें"}
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3">
-              Configure Location & Catchment Telemetry
-            </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              Select your region, pick a preset scenario or customize weather sliders, then click Predict Risk.
-            </p>
           </div>
 
-          {/* Input Console Box */}
-          <div className="bg-[#0B0E18] border border-[#181F30] rounded-3xl p-6 sm:p-8 shadow-2xl relative">
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF3B1D]/50 to-transparent" />
-
-            {/* Row 1: Location Dropdowns & Village/Area */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* State */}
-              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
-                <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
-                  1. State
-                </label>
+          {/* Form Row 1: State, District, Village/Area */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+            {/* State */}
+            <div>
+              <label className="text-[11px] font-semibold text-slate-300 block mb-1.5">
+                State
+              </label>
+              <div className="relative">
                 <select
                   value={selectedState}
                   onChange={(e) => handleStateSelect(e.target.value as "Assam" | "Uttarakhand")}
-                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
+                  className="w-full bg-[#05070E] border border-[#1A2338] hover:border-slate-500 focus:border-[#FF5A1F] rounded-xl px-3.5 py-2.5 text-xs text-white appearance-none cursor-pointer focus:outline-none transition-colors"
                 >
-                  <option value="Assam" className="bg-[#080B12] text-white">Assam (Barak River)</option>
-                  <option value="Uttarakhand" className="bg-[#080B12] text-white">Uttarakhand (Himalayan)</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
                 </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
+            </div>
 
-              {/* District */}
-              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
-                <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
-                  2. District
-                </label>
+            {/* District */}
+            <div>
+              <label className="text-[11px] font-semibold text-slate-300 block mb-1.5">
+                District
+              </label>
+              <div className="relative">
                 <select
                   value={selectedDistrict}
                   onChange={(e) => onLocationChange(selectedState, e.target.value, selectedCatchment)}
-                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
+                  className="w-full bg-[#05070E] border border-[#1A2338] hover:border-slate-500 focus:border-[#FF5A1F] rounded-xl px-3.5 py-2.5 text-xs text-white appearance-none cursor-pointer focus:outline-none transition-colors"
                 >
                   {locations[selectedState].districts.map((d) => (
-                    <option key={d} value={d} className="bg-[#080B12] text-white">
+                    <option key={d} value={d}>
                       {d}
                     </option>
                   ))}
                 </select>
-              </div>
-
-              {/* Catchment Basin */}
-              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
-                <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
-                  3. Catchment Basin
-                </label>
-                <select
-                  value={selectedCatchment}
-                  onChange={(e) => onLocationChange(selectedState, selectedDistrict, e.target.value)}
-                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
-                >
-                  {locations[selectedState].catchments.map((c) => (
-                    <option key={c} value={c} className="bg-[#080B12] text-white">
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Village / Area */}
-              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
-                <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
-                  4. Village / Town
-                </label>
-                <input
-                  type="text"
-                  value={villageArea}
-                  onChange={(e) => setVillageArea(e.target.value)}
-                  placeholder="e.g. Silchar / Dharali"
-                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-200 focus:outline-none font-mono"
-                />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 
-            {/* Row 2: Mode & Date/Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              {/* Mode Toggle */}
-              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
-                    Telemetry Mode
-                  </label>
-                  <span className="text-xs text-slate-400 font-mono">
-                    {mode === "live" ? "Real-time radar & gauge feeds" : "Historical storm replay (Dharali 2023)"}
-                  </span>
-                </div>
-                <div className="bg-black/50 p-1 rounded-xl border border-white/10 flex gap-1">
-                  <button
-                    onClick={() => onModeChange("live")}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                      mode === "live"
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                        : "text-slate-400 hover:text-white"
-                    )}
-                  >
-                    Live
-                  </button>
-                  <button
-                    onClick={() => {
-                      onModeChange("historical");
-                      onDateTimeChange("29 Aug 2023 04:30 AM");
-                    }}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
-                      mode === "historical"
-                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                        : "text-slate-400 hover:text-white"
-                    )}
-                  >
-                    Historical
-                  </button>
-                </div>
+            {/* Village / Area */}
+            <div>
+              <label className="text-[11px] font-semibold text-slate-300 block mb-1.5">
+                Village / Area
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={villageSearch}
+                  onChange={(e) => setVillageSearch(e.target.value)}
+                  placeholder="Search village or area"
+                  className="w-full bg-[#05070E] border border-[#1A2338] hover:border-slate-500 focus:border-[#FF5A1F] rounded-xl pl-3.5 pr-8 py-2.5 text-xs text-white focus:outline-none transition-colors"
+                />
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
+            </div>
+          </div>
 
-              {/* Date & Time Picker */}
-              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4 flex items-center justify-between">
-                <div>
-                  <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
-                    Forecast Date & Time
-                  </label>
-                  <span className="text-xs text-slate-400 font-mono">Target observation window</span>
-                </div>
-                <div className="flex items-center gap-2 bg-[#05070B] border border-[#1C253B] px-3 py-1.5 rounded-xl">
-                  <Clock className="w-3.5 h-3.5 text-[#FF3B1D]" />
+          {/* Form Row 2: Select Date, Lead Time */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* Select Date */}
+            <div>
+              <label className="text-[11px] font-semibold text-slate-300 block mb-1.5">
+                Select Date
+              </label>
+              <div className="relative">
+                <div className="flex items-center gap-2 bg-[#05070E] border border-[#1A2338] rounded-xl px-3.5 py-2.5 text-xs text-slate-200">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   <input
                     type="text"
                     value={dateTime}
                     onChange={(e) => onDateTimeChange(e.target.value)}
-                    className="bg-transparent text-xs font-mono font-bold text-white w-36 focus:outline-none"
+                    className="bg-transparent text-xs text-white focus:outline-none w-full font-mono"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Row 3: 1-Click Quick Scenario Presets */}
-            <div className="mb-6">
-              <label className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-2.5">
-                ⚡ Quick Scenarios (Or Adjust Sliders Below):
+            {/* Lead Time (Forecast Horizon) */}
+            <div>
+              <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1 mb-1.5">
+                <span>Lead Time (Forecast Horizon)</span>
+                <Info className="w-3 h-3 text-slate-400" />
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {Object.entries(scenarioPresets).map(([key, item]) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => onFeaturesChange(item.features)}
-                      className={cn(
-                        "flex items-center gap-2.5 p-3 rounded-xl border text-xs font-bold transition-all text-left hover:scale-[1.02] cursor-pointer",
-                        item.color
-                      )}
-                    >
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span>{item.name}</span>
-                    </button>
-                  );
-                })}
+              <div className="relative">
+                <select
+                  value={leadTime}
+                  onChange={(e) => setLeadTime(e.target.value)}
+                  className="w-full bg-[#05070E] border border-[#1A2338] hover:border-slate-500 focus:border-[#FF5A1F] rounded-xl px-3.5 py-2.5 text-xs text-white appearance-none cursor-pointer focus:outline-none transition-colors"
+                >
+                  <option value="Next 3 Hours">Next 3 Hours</option>
+                  <option value="Next 6 Hours">Next 6 Hours</option>
+                  <option value="Next 12 Hours">Next 12 Hours</option>
+                  <option value="Next 24 Hours">Next 24 Hours</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
+          </div>
 
-            {/* Row 4: Parameter Sliders */}
-            <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-5 mb-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {/* Quick Scenario Buttons Toggle (Optional Advanced) */}
+          <div className="flex items-center justify-between pt-2 pb-4 border-t border-white/5 text-[11px]">
+            <button
+              onClick={() => setShowAdvancedSliders(!showAdvancedSliders)}
+              className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <SlidersHorizontal className="w-3 h-3 text-[#FF5A1F]" />
+              <span>{showAdvancedSliders ? "Hide Telemetry Sliders" : "Customize Advanced Sliders"}</span>
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500 text-[10px] uppercase font-bold">Presets:</span>
+              <button
+                onClick={() => onFeaturesChange(scenarioPresets.extreme.features)}
+                className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 cursor-pointer"
+              >
+                Cloudburst
+              </button>
+              <button
+                onClick={() => onFeaturesChange(scenarioPresets.high.features)}
+                className="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 cursor-pointer"
+              >
+                Monsoon
+              </button>
+            </div>
+          </div>
+
+          {/* Advanced Sliders Dropdown if toggled */}
+          {showAdvancedSliders && (
+            <div className="mb-6 p-4 rounded-2xl bg-black/40 border border-white/5 grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <div className="flex justify-between text-xs text-slate-400 font-mono mb-1.5">
-                  <span>Current Rainfall (1h)</span>
+                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                  <span>Current Rain (1h)</span>
                   <span className="font-bold text-white">{features.rainfall_mm} mm</span>
                 </div>
                 <input
                   type="range"
                   min="0"
                   max="150"
-                  step="1"
                   value={features.rainfall_mm}
                   onChange={(e) => handleSliderChange("rainfall_mm", parseFloat(e.target.value))}
-                  className="w-full accent-[#FF3B1D]"
+                  className="w-full accent-[#FF5A1F]"
                 />
               </div>
-
               <div>
-                <div className="flex justify-between text-xs text-slate-400 font-mono mb-1.5">
-                  <span>Antecedent Rain (7-Day)</span>
+                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                  <span>Antecedent (7d)</span>
                   <span className="font-bold text-white">{features.rainfall_7d} mm</span>
                 </div>
                 <input
                   type="range"
                   min="0"
                   max="400"
-                  step="5"
                   value={features.rainfall_7d}
                   onChange={(e) => handleSliderChange("rainfall_7d", parseFloat(e.target.value))}
                   className="w-full accent-blue-500"
                 />
               </div>
-
               <div>
-                <div className="flex justify-between text-xs text-slate-400 font-mono mb-1.5">
-                  <span>Soil Saturation Proxy</span>
+                <div className="flex justify-between text-[11px] text-slate-400 mb-1">
+                  <span>Soil Moisture Proxy</span>
                   <span className="font-bold text-emerald-400">{Math.round(features.soil_saturation_proxy * 100)}%</span>
                 </div>
                 <input
@@ -553,44 +497,132 @@ export function HeroLanding({
                 />
               </div>
             </div>
+          )}
 
-            {/* Row 5: Action Buttons (Fetch Weather Telemetry + Run Prediction) */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
-              <div className="text-xs text-slate-400 font-mono">
-                Location: <b className="text-white">{villageArea}, {selectedDistrict}</b> • Basin: <b className="text-cyan-400">{selectedCatchment}</b>
+          {/* Center Main Action Button: CHECK FLOOD RISK -> */}
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={handleCheckRisk}
+              disabled={isAnalyzing}
+              className="w-full sm:w-auto px-10 py-3.5 rounded-full bg-gradient-to-r from-[#FF5A1F] via-[#FF4500] to-[#E03A00] hover:from-[#FF6D38] hover:to-[#FF5A1F] text-white text-xs sm:text-sm font-black uppercase tracking-wider shadow-xl shadow-[#FF5A1F]/35 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            >
+              <span>{lang === "en" ? "CHECK FLOOD RISK" : "बाढ़ जोखिम की जाँच करें"}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+
+        {/* ── SECTION: WHAT YOU WILL GET ── */}
+        <div className="w-full mt-16 mb-6">
+          {/* Centered Divider with Title */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent flex-1" />
+            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-300">
+              <span className="text-[#FF5A1F]">◆</span>
+              <span>{lang === "en" ? "WHAT YOU WILL GET" : "आपको क्या मिलेगा"}</span>
+              <span className="text-[#FF5A1F]">◆</span>
+            </div>
+            <div className="h-px bg-gradient-to-r from-slate-700 via-slate-700 to-transparent flex-1" />
+          </div>
+
+          {/* 6 Feature Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 text-left">
+            {/* 1. Flood Risk Prediction */}
+            <div className="p-4 rounded-2xl bg-[#090D18]/80 border border-[#1C253B] hover:border-[#FF5A1F]/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-[#FF5A1F]/15 border border-[#FF5A1F]/30 flex items-center justify-center mb-3">
+                  <TrendingUp className="w-4 h-4 text-[#FF5A1F]" />
+                </div>
+                <h3 className="text-xs font-bold text-[#FF5A1F] mb-1.5">
+                  Flood Risk Prediction
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Get risk score, confidence and lead time for your selected location.
+                </p>
               </div>
+            </div>
 
-              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                {/* Step 2: Fetch & View Weather Telemetry Button */}
-                <button
-                  onClick={onViewTelemetry}
-                  className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-[#0E1526] hover:bg-[#16213D] border border-blue-500/40 text-blue-300 hover:text-white px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg shadow-blue-500/10"
-                >
-                  <CloudRain className="w-4 h-4 text-blue-400" />
-                  <span>Fetch & View Weather Telemetry</span>
-                </button>
+            {/* 2. Risk Map */}
+            <div className="p-4 rounded-2xl bg-[#090D18]/80 border border-[#1C253B] hover:border-emerald-500/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mb-3">
+                  <Map className="w-4 h-4 text-emerald-400" />
+                </div>
+                <h3 className="text-xs font-bold text-emerald-400 mb-1.5">
+                  Risk Map
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  View predicted risk areas on interactive real map with risk zones.
+                </p>
+              </div>
+            </div>
 
-                {/* Direct Predict Button */}
-                <button
-                  onClick={() => {
-                    onPredict(features, { state: selectedState, district: selectedDistrict, catchment: selectedCatchment });
-                    onOpenDashboard();
-                  }}
-                  disabled={isAnalyzing}
-                  className="flex-1 md:flex-initial flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#FF3B1D] via-[#FF4E33] to-[#D9260B] hover:from-[#FF4E33] hover:to-[#E02E10] text-white px-7 py-3.5 rounded-2xl text-xs sm:text-sm font-black tracking-widest uppercase shadow-2xl shadow-[#FF3B1D]/40 border border-[#FF3B1D]/50 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
-                >
-                  <Play className="w-4 h-4 fill-white" />
-                  <span>PREDICT FLOOD RISK</span>
-                </button>
+            {/* 3. Alerts & Notifications */}
+            <div className="p-4 rounded-2xl bg-[#090D18]/80 border border-[#1C253B] hover:border-amber-500/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center mb-3">
+                  <Bell className="w-4 h-4 text-amber-400" />
+                </div>
+                <h3 className="text-xs font-bold text-amber-400 mb-1.5">
+                  Alerts & Notifications
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Receive timely alerts with sound notifications for high risk.
+                </p>
+              </div>
+            </div>
+
+            {/* 4. Route & Safety */}
+            <div className="p-4 rounded-2xl bg-[#090D18]/80 border border-[#1C253B] hover:border-blue-500/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mb-3">
+                  <Navigation className="w-4 h-4 text-blue-400" />
+                </div>
+                <h3 className="text-xs font-bold text-blue-400 mb-1.5">
+                  Route & Safety
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Find safer routes and nearest shelters/hospitals in your area.
+                </p>
+              </div>
+            </div>
+
+            {/* 5. Nearby Shelters */}
+            <div className="p-4 rounded-2xl bg-[#090D18]/80 border border-[#1C253B] hover:border-purple-500/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mb-3">
+                  <Building2 className="w-4 h-4 text-purple-400" />
+                </div>
+                <h3 className="text-xs font-bold text-purple-400 mb-1.5">
+                  Nearby Shelters
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Locate nearest shelters and hospitals for emergency support.
+                </p>
+              </div>
+            </div>
+
+            {/* 6. Reports & History */}
+            <div className="p-4 rounded-2xl bg-[#090D18]/80 border border-[#1C253B] hover:border-cyan-500/40 transition-all flex flex-col justify-between group">
+              <div>
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center mb-3">
+                  <FileText className="w-4 h-4 text-cyan-400" />
+                </div>
+                <h3 className="text-xs font-bold text-cyan-400 mb-1.5">
+                  Reports & History
+                </h3>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  View past predictions, reports and historical replay of flood events.
+                </p>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </main>
 
       {/* ── Footer ── */}
-      <footer className="py-8 px-6 text-center border-t border-[#141A28] bg-[#05070B] text-xs text-slate-500 font-mono">
-        <p>PRAVAH AI • DEIP-192 Flash Flood Intelligence & Safe Evacuation System • 2026</p>
+      <footer className="py-6 px-6 text-center border-t border-[#141A28] bg-[#05070D] text-xs text-slate-500 font-mono">
+        <p>PRAVAH AI • DEIP-192 Flash Flood Intelligence & Early Warning System • 2026</p>
       </footer>
     </div>
   );
