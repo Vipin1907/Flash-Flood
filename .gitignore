@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js build output
+.next/
+out/
+
+# Python
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Large Datasets and GIS rasters (>25MB - exceeds GitHub limits)
+*.tif
+*.tiff
+*.zip
+*.tar
+*.tar.gz
+*.7z
+flood_ml/ml_service/training/data/raw_grid/raw/combined_real_features_with_target.csv
+flood_ml/ml_service/training/data/raw_grid/raw/final_feature_table_no_target.csv
+flood_ml/ml_service/training/data/raw_grid/raw/final_training_data.csv
+
+# Model binary files (large weights)
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Cache & OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.ipynb_checkpoints/
+cache/
