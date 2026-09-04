@@ -19,6 +19,7 @@ import { RainfallChart } from "@/components/cards/rainfall-chart";
 import { AlertPanel } from "@/components/cards/alert-panel";
 
 import { HeroLanding } from "@/components/views/hero-landing";
+import { WeatherTelemetryView } from "@/components/views/weather-telemetry-view";
 import { CatchmentView } from "@/components/views/catchment-view";
 import { HydrologyView } from "@/components/views/hydrology-view";
 import { AlertsView } from "@/components/views/alerts-view";
@@ -64,6 +65,8 @@ export default function Home() {
   const [selectedState, setSelectedState] = useState<"Assam" | "Uttarakhand">("Assam");
   const [selectedDistrict, setSelectedDistrict] = useState("Cachar");
   const [selectedCatchment, setSelectedCatchment] = useState("A127 - Barak Basin");
+  const [mode, setMode] = useState<"live" | "historical">("live");
+  const [dateTime, setDateTime] = useState("29 Aug 2026 12:00 PM");
 
   const [features, setFeatures] = useState<FeatureInputs>(INITIAL_FEATURES);
   const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
@@ -184,6 +187,7 @@ export default function Home() {
             onToggleSidebar={() => setIsSidebarOpen(true)}
             onStartPrediction={() => {}}
             onOpenDashboard={() => setActiveTab("dashboard")}
+            onViewTelemetry={() => setActiveTab("weather-telemetry")}
             selectedState={selectedState}
             selectedDistrict={selectedDistrict}
             selectedCatchment={selectedCatchment}
@@ -192,6 +196,10 @@ export default function Home() {
             onFeaturesChange={setFeatures}
             onPredict={runPrediction}
             isAnalyzing={isAnalyzing}
+            dateTime={dateTime}
+            onDateTimeChange={setDateTime}
+            mode={mode}
+            onModeChange={setMode}
           />
         </div>
       ) : (
@@ -213,7 +221,27 @@ export default function Home() {
           {/* Dynamic Body Content */}
           <main className="flex-1 p-6 overflow-y-auto">
             <AnimatePresence mode="wait">
-              {activeTab === "risk-map" ? (
+              {activeTab === "weather-telemetry" ? (
+                <motion.div
+                  key="weather-telemetry"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <WeatherTelemetryView
+                    selectedState={selectedState}
+                    selectedDistrict={selectedDistrict}
+                    selectedCatchment={selectedCatchment}
+                    dateTime={dateTime}
+                    mode={mode}
+                    features={features}
+                    onPredict={runPrediction}
+                    onProceedToDashboard={() => setActiveTab("dashboard")}
+                    isAnalyzing={isAnalyzing}
+                  />
+                </motion.div>
+              ) : activeTab === "risk-map" ? (
                 <motion.div
                   key="risk-map"
                   initial={{ opacity: 0, y: 10 }}

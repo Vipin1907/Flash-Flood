@@ -12,12 +12,14 @@ import {
   FileText,
   Database,
   Settings,
+  CloudRain,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type NavTab =
   | "landing"
+  | "weather-telemetry"
   | "dashboard"
   | "risk-map"
   | "catchment"
@@ -37,7 +39,8 @@ interface SidebarProps {
 }
 
 const navItems: { id: NavTab; label: string; icon: any; badge?: string }[] = [
-  { id: "landing", label: "Home / Overview", icon: LayoutDashboard },
+  { id: "landing", label: "Home / Input Console", icon: LayoutDashboard },
+  { id: "weather-telemetry", label: "Weather & Telemetry", icon: CloudRain, badge: "Step 2" },
   { id: "dashboard", label: "Live Dashboard", icon: Layers, badge: "AI" },
   { id: "risk-map", label: "Risk Map", icon: Map },
   { id: "catchment", label: "Catchment View", icon: Layers },

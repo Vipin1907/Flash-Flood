@@ -73,7 +73,7 @@ const EVACUATION_MAP_DATA = {
   },
   Assam: {
     title: "Silchar Urban to Lakhipur High-Ground Relief Camp",
-    center: [24.8100, 24.8100 ? 92.8900 : 92.8900] as [number, number],
+    center: [24.8100, 92.8900] as [number, number],
     zoom: 11,
     start: { name: "Silchar City Center", coords: [24.8230, 92.7980] as [number, number] },
     hazard: {

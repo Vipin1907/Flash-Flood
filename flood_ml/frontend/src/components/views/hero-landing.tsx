@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ShieldAlert,
@@ -27,6 +28,7 @@ interface HeroLandingProps {
   onToggleSidebar?: () => void;
   onStartPrediction: () => void;
   onOpenDashboard: () => void;
+  onViewTelemetry: () => void;
   selectedState: "Assam" | "Uttarakhand";
   selectedDistrict: string;
   selectedCatchment: string;
@@ -35,6 +37,10 @@ interface HeroLandingProps {
   onFeaturesChange: (features: FeatureInputs) => void;
   onPredict: (features: FeatureInputs, loc?: { state: string; district: string; catchment: string }) => void;
   isAnalyzing: boolean;
+  dateTime: string;
+  onDateTimeChange: (dt: string) => void;
+  mode: "live" | "historical";
+  onModeChange: (m: "live" | "historical") => void;
 }
 
 const locations = {
@@ -102,6 +108,7 @@ const scenarioPresets = {
 export function HeroLanding({
   onToggleSidebar,
   onOpenDashboard,
+  onViewTelemetry,
   selectedState,
   selectedDistrict,
   selectedCatchment,
@@ -110,14 +117,22 @@ export function HeroLanding({
   onFeaturesChange,
   onPredict,
   isAnalyzing,
+  dateTime,
+  onDateTimeChange,
+  mode,
+  onModeChange,
 }: HeroLandingProps) {
+  const [villageArea, setVillageArea] = useState("Silchar Central / Annapurna Ghat");
+
   const handleStateSelect = (state: "Assam" | "Uttarakhand") => {
     const newDistrict = locations[state].districts[0];
     const newCatchment = locations[state].catchments[0];
     onLocationChange(state, newDistrict, newCatchment);
     if (state === "Assam") {
+      setVillageArea("Silchar Central / Annapurna Ghat");
       onFeaturesChange(scenarioPresets.high.features);
     } else {
+      setVillageArea("Dharali / Upper Bhagirathi Valley");
       onFeaturesChange(scenarioPresets.extreme.features);
     }
   };
@@ -334,8 +349,8 @@ export function HeroLanding({
           <div className="bg-[#0B0E18] border border-[#181F30] rounded-3xl p-6 sm:p-8 shadow-2xl relative">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF3B1D]/50 to-transparent" />
 
-            {/* Row 1: Location Dropdowns */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Row 1: Location Dropdowns & Village/Area */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {/* State */}
               <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
                 <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
@@ -344,10 +359,10 @@ export function HeroLanding({
                 <select
                   value={selectedState}
                   onChange={(e) => handleStateSelect(e.target.value as "Assam" | "Uttarakhand")}
-                  className="w-full bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer"
+                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
                 >
-                  <option value="Assam" className="bg-[#080B12] text-white">Assam (Barak River Basin)</option>
-                  <option value="Uttarakhand" className="bg-[#080B12] text-white">Uttarakhand (Himalayan Catchment)</option>
+                  <option value="Assam" className="bg-[#080B12] text-white">Assam (Barak River)</option>
+                  <option value="Uttarakhand" className="bg-[#080B12] text-white">Uttarakhand (Himalayan)</option>
                 </select>
               </div>
 
@@ -359,7 +374,7 @@ export function HeroLanding({
                 <select
                   value={selectedDistrict}
                   onChange={(e) => onLocationChange(selectedState, e.target.value, selectedCatchment)}
-                  className="w-full bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer"
+                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
                 >
                   {locations[selectedState].districts.map((d) => (
                     <option key={d} value={d} className="bg-[#080B12] text-white">
@@ -369,7 +384,7 @@ export function HeroLanding({
                 </select>
               </div>
 
-              {/* Catchment */}
+              {/* Catchment Basin */}
               <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
                 <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
                   3. Catchment Basin
@@ -377,7 +392,7 @@ export function HeroLanding({
                 <select
                   value={selectedCatchment}
                   onChange={(e) => onLocationChange(selectedState, selectedDistrict, e.target.value)}
-                  className="w-full bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer"
+                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
                 >
                   {locations[selectedState].catchments.map((c) => (
                     <option key={c} value={c} className="bg-[#080B12] text-white">
@@ -386,9 +401,84 @@ export function HeroLanding({
                   ))}
                 </select>
               </div>
+
+              {/* Village / Area */}
+              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4">
+                <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
+                  4. Village / Town
+                </label>
+                <input
+                  type="text"
+                  value={villageArea}
+                  onChange={(e) => setVillageArea(e.target.value)}
+                  placeholder="e.g. Silchar / Dharali"
+                  className="w-full bg-transparent text-xs sm:text-sm font-bold text-slate-200 focus:outline-none font-mono"
+                />
+              </div>
             </div>
 
-            {/* Row 2: 1-Click Quick Scenario Presets */}
+            {/* Row 2: Mode & Date/Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {/* Mode Toggle */}
+              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
+                    Telemetry Mode
+                  </label>
+                  <span className="text-xs text-slate-400 font-mono">
+                    {mode === "live" ? "Real-time radar & gauge feeds" : "Historical storm replay (Dharali 2023)"}
+                  </span>
+                </div>
+                <div className="bg-black/50 p-1 rounded-xl border border-white/10 flex gap-1">
+                  <button
+                    onClick={() => onModeChange("live")}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                      mode === "live"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : "text-slate-400 hover:text-white"
+                    )}
+                  >
+                    Live
+                  </button>
+                  <button
+                    onClick={() => {
+                      onModeChange("historical");
+                      onDateTimeChange("29 Aug 2023 04:30 AM");
+                    }}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                      mode === "historical"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                        : "text-slate-400 hover:text-white"
+                    )}
+                  >
+                    Historical
+                  </button>
+                </div>
+              </div>
+
+              {/* Date & Time Picker */}
+              <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-4 flex items-center justify-between">
+                <div>
+                  <label className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-1">
+                    Forecast Date & Time
+                  </label>
+                  <span className="text-xs text-slate-400 font-mono">Target observation window</span>
+                </div>
+                <div className="flex items-center gap-2 bg-[#05070B] border border-[#1C253B] px-3 py-1.5 rounded-xl">
+                  <Clock className="w-3.5 h-3.5 text-[#FF3B1D]" />
+                  <input
+                    type="text"
+                    value={dateTime}
+                    onChange={(e) => onDateTimeChange(e.target.value)}
+                    className="bg-transparent text-xs font-mono font-bold text-white w-36 focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Row 3: 1-Click Quick Scenario Presets */}
             <div className="mb-6">
               <label className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-2.5">
                 ⚡ Quick Scenarios (Or Adjust Sliders Below):
@@ -413,7 +503,7 @@ export function HeroLanding({
               </div>
             </div>
 
-            {/* Row 3: Parameter Sliders */}
+            {/* Row 4: Parameter Sliders */}
             <div className="bg-[#080B12] border border-[#161D2C] rounded-2xl p-5 mb-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
                 <div className="flex justify-between text-xs text-slate-400 font-mono mb-1.5">
@@ -464,23 +554,35 @@ export function HeroLanding({
               </div>
             </div>
 
-            {/* Primary Action Button */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Row 5: Action Buttons (Fetch Weather Telemetry + Run Prediction) */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-white/10">
               <div className="text-xs text-slate-400 font-mono">
-                Location: <b className="text-white">{selectedDistrict}, {selectedState}</b> • Catchment: <b className="text-cyan-400">{selectedCatchment}</b>
+                Location: <b className="text-white">{villageArea}, {selectedDistrict}</b> • Basin: <b className="text-cyan-400">{selectedCatchment}</b>
               </div>
 
-              <button
-                onClick={() => {
-                  onPredict(features, { state: selectedState, district: selectedDistrict, catchment: selectedCatchment });
-                  onOpenDashboard();
-                }}
-                disabled={isAnalyzing}
-                className="w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF3B1D] via-[#FF4E33] to-[#D9260B] hover:from-[#FF4E33] hover:to-[#E02E10] text-white px-8 py-4 rounded-2xl text-sm font-black tracking-widest uppercase shadow-2xl shadow-[#FF3B1D]/40 border border-[#FF3B1D]/50 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
-              >
-                <Play className="w-4 h-4 fill-white" />
-                <span>PREDICT FLOOD RISK NOW</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                {/* Step 2: Fetch & View Weather Telemetry Button */}
+                <button
+                  onClick={onViewTelemetry}
+                  className="flex-1 md:flex-initial flex items-center justify-center gap-2 bg-[#0E1526] hover:bg-[#16213D] border border-blue-500/40 text-blue-300 hover:text-white px-6 py-3.5 rounded-2xl text-xs sm:text-sm font-bold tracking-wider uppercase transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg shadow-blue-500/10"
+                >
+                  <CloudRain className="w-4 h-4 text-blue-400" />
+                  <span>Fetch & View Weather Telemetry</span>
+                </button>
+
+                {/* Direct Predict Button */}
+                <button
+                  onClick={() => {
+                    onPredict(features, { state: selectedState, district: selectedDistrict, catchment: selectedCatchment });
+                    onOpenDashboard();
+                  }}
+                  disabled={isAnalyzing}
+                  className="flex-1 md:flex-initial flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#FF3B1D] via-[#FF4E33] to-[#D9260B] hover:from-[#FF4E33] hover:to-[#E02E10] text-white px-7 py-3.5 rounded-2xl text-xs sm:text-sm font-black tracking-widest uppercase shadow-2xl shadow-[#FF3B1D]/40 border border-[#FF3B1D]/50 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                >
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>PREDICT FLOOD RISK</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
