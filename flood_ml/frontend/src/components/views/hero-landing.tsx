@@ -164,10 +164,16 @@ export function HeroLanding({
     <div className="min-h-screen flex flex-col bg-[#05070D] text-slate-100 selection:bg-[#FF5A1F] selection:text-white relative overflow-hidden font-sans">
       {/* ── Background Mountain / Atmospheric Glow ── */}
       <div
-        className="absolute inset-0 bg-cover bg-center pointer-events-none opacity-20 -z-10"
+        className="absolute inset-0 bg-cover bg-center pointer-events-none -z-10"
         style={{
-          backgroundImage:
-            "radial-gradient(circle at 50% 20%, rgba(255, 90, 31, 0.18) 0%, transparent 60%), linear-gradient(to bottom, #05070D 0%, rgba(5,7,13,0.7) 40%, #05070D 100%)",
+          backgroundImage: `
+            radial-gradient(circle at 50% 25%, rgba(255, 90, 31, 0.15) 0%, transparent 60%),
+            linear-gradient(to bottom, rgba(5, 7, 13, 0.75) 0%, rgba(5, 7, 13, 0.88) 50%, #05070D 100%),
+            url('/mountain_hero_bg.jpg')
+          `,
+          backgroundPosition: "center top",
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
         }}
       />
 
