@@ -48,7 +48,7 @@ services:
     name: flood-frontend
     runtime: node
     rootDir: flood_ml/frontend
-    buildCommand: npm install --legacy-peer-deps && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     plan: free
     autoDeploy: true
