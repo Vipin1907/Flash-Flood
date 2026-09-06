@@ -32,15 +32,14 @@ services:
     plan: free
     autoDeploy: true
     envVars:
+      - key: NODE_VERSION
+        value: 20
       - key: NODE_ENV
         value: production
       - key: CORS_ORIGIN
         value: "*"
       - key: ML_SERVICE_URL
-        fromService:
-          type: web
-          name: flood-ml-service
-          property: host
+        value: https://flood-ml-service.onrender.com
 
   # -------------------------------------------------------------
   # 3. Next.js 16 Web Dashboard Frontend
@@ -49,15 +48,14 @@ services:
     name: flood-frontend
     runtime: node
     rootDir: flood_ml/frontend
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: npm start
     plan: free
     autoDeploy: true
     envVars:
+      - key: NODE_VERSION
+        value: 20
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: flood-ml-service
-          property: host
+        value: https://flood-ml-service.onrender.com
