@@ -21,16 +21,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
-# routing_engine is in the same folder (ml_service/)
+# Add modular service directories to sys.path
+_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.join(_BASE_DIR, "routing_service"))
+sys.path.insert(0, os.path.join(_BASE_DIR, "agentic_service"))
 sys.path.insert(0, os.path.dirname(__file__))
+
 import routing_engine
 from shapely.geometry import Point
 
 app = FastAPI(title="DEIP-192 ML Prediction Service", version="2.0.0")
 
+# Support both localhost and deployed origins
+cors_env = os.getenv("CORS_ORIGIN", "*")
+allowed_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()] if cors_env != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=allowed_origins if "*" not in allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,10 +46,10 @@ app.add_middleware(
 
 # ─── Paths (relative to this file) ───────────────────────
 _HERE = os.path.dirname(__file__)
-# Using original model — calibrated version collapsed probabilities to 0 due to
-# extreme class imbalance (50 positives in 1.2M rows). Original XGBClassifier
-# with scale_pos_weight correctly predicts 0.97+ for actual flood events.
-MODEL_PATH    = os.path.join(_HERE, "training", "data", "raw_grid", "raw", "model_real_v2.pkl")
+MODEL_PATH = os.path.join(_HERE, "model_real_v2.pkl")
+if not os.path.exists(MODEL_PATH):
+    MODEL_PATH = os.path.join(_HERE, "training", "data", "raw_grid", "raw", "model_real_v2.pkl")
+
 FEATURES_PATH = os.path.join(_HERE, "model_v2_features.json")
 
 # ─── Load model + features at startup ────────────────────
@@ -51,6 +59,7 @@ try:
 except Exception as e:
     print(f"[ERROR] Could not load model: {e}")
     calibrated_model = None
+
 
 with open(FEATURES_PATH) as f:
     FEATURE_COLS: List[str] = json.load(f)

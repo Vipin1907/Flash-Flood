@@ -45,6 +45,7 @@ const RoutesSafetyView = dynamic(
 
 import { predictRisk, getHealth, triggerAlert } from "@/lib/api";
 import { mockRainfallTimeline, mockHydrology, mockPrediction } from "@/lib/mock-data";
+import { DISTRICT_PROFILES } from "@/lib/weather-service";
 import type { PredictionResponse } from "@/lib/types";
 
 const INITIAL_FEATURES: FeatureInputs = {
@@ -166,7 +167,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#05070B] text-white selection:bg-[#FF3B1D] selection:text-white">
+    <div className="flex min-h-screen bg-slate-100 dark:bg-[#05070B] text-slate-900 dark:text-white selection:bg-[#FF3B1D] selection:text-white transition-colors duration-200">
       {/* Visual Pipeline Analysis Modal */}
       <AnimatePresence>
         {isAnalyzing && <AnalysisProgressModal currentStep={analysisStep} />}
@@ -216,6 +217,11 @@ export default function Home() {
             selectedDistrict={selectedDistrict}
             selectedCatchment={selectedCatchment}
             onLocationChange={handleLocationChange}
+            dateTime={dateTime}
+            onDateTimeChange={setDateTime}
+            mode={mode}
+            onModeChange={setMode}
+            onBackToLanding={() => setActiveTab("landing")}
           />
 
           {/* Dynamic Body Content */}
@@ -234,10 +240,13 @@ export default function Home() {
                     selectedDistrict={selectedDistrict}
                     selectedCatchment={selectedCatchment}
                     dateTime={dateTime}
+                    onDateTimeChange={setDateTime}
                     mode={mode}
+                    onModeChange={setMode}
                     features={features}
                     onPredict={runPrediction}
                     onProceedToDashboard={() => setActiveTab("dashboard")}
+                    onBackToHome={() => setActiveTab("landing")}
                     isAnalyzing={isAnalyzing}
                   />
                 </motion.div>
@@ -358,96 +367,135 @@ export default function Home() {
                   <SettingsView />
                 </motion.div>
               ) : (
-                /* Main Dashboard Screen (Panel 2 from Poster) */
+                /* Main Dashboard Screen — Flood Command Center */
                 <motion.div
                   key="dashboard"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.25 }}
-                  className="space-y-6"
+                  className="space-y-5"
                 >
-                {/* Step 5: View Results Banner with Take Action Bar (Step 6) */}
-                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-[#0B0E19]/90 border border-[#181F30] shadow-lg shadow-black/40 backdrop-blur-xl">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-white uppercase tracking-wider font-mono">
-                        Active Location Assessment:
-                      </span>
-                      <span className="text-xs text-[#FF5A3D] font-bold bg-[#FF3B1D]/15 px-2.5 py-0.5 rounded-lg border border-[#FF3B1D]/25 font-mono">
-                        {selectedDistrict}, {selectedState} ({selectedCatchment})
-                      </span>
+
+                {/* ── Command Center Header ── */}
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-white via-white to-slate-50 dark:from-[#0A0E1A] dark:via-[#0C1020] dark:to-[#0E1224] border border-slate-200/80 dark:border-[#1A2035] shadow-sm transition-colors duration-200">
+                  {/* Subtle accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#FF5A1F] via-[#FF8A50] to-[#FF5A1F]" />
+
+                  <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FF5A1F]/10 border border-[#FF5A1F]/20">
+                          <Sparkles className="w-3 h-3 text-[#FF5A1F]" />
+                          <span className="text-[10px] font-black text-[#FF5A1F] uppercase tracking-wider">Flood Command Center</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-800 dark:text-white">
+                          {selectedDistrict}, {selectedState}
+                        </span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-500 font-mono">
+                          • {selectedCatchment}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-500 font-mono">
+                        <span>⏱ {dateTime}</span>
+                        <span>• Model: <b className="text-[#FF5A1F]">XGBoost V2 + TreeSHAP</b></span>
+                        <span>• <b className="text-emerald-600 dark:text-emerald-400">●</b> Live Sync</span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-slate-400 mt-1 font-mono">
-                      Mode: <b className="text-emerald-400">Live Telemetry</b> • AI Engine: <b className="text-slate-200">XGBoost Real V2 + TreeSHAP</b>
-                    </p>
-                  </div>
 
-                  {/* Step 6: Take Action Buttons (From Poster) */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 font-mono mr-1">
-                      Take Action:
-                    </span>
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleTriggerAlert}
+                        disabled={alertLoading}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold bg-[#FF5A1F]/10 border border-[#FF5A1F]/25 text-[#FF5A1F] hover:bg-[#FF5A1F]/20 transition-all cursor-pointer"
+                      >
+                        <Bell className="w-3.5 h-3.5" />
+                        <span>{alertLoading ? "Alerting..." : "Trigger Alert"}</span>
+                      </button>
 
-                    {/* Alerts Button */}
-                    <button
-                      onClick={handleTriggerAlert}
-                      disabled={alertLoading}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#FF3B1D]/20 border border-[#FF3B1D]/40 text-[#FF5A3D] hover:bg-[#FF3B1D]/30 transition-all cursor-pointer"
-                    >
-                      <Bell className="w-3.5 h-3.5 text-[#FF3B1D]" />
-                      <span>{alertLoading ? "Alerting..." : "Alerts"}</span>
-                    </button>
+                      <button
+                        onClick={() => setActiveTab("routes")}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold bg-blue-500/8 dark:bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-500/15 transition-all cursor-pointer"
+                      >
+                        <Navigation className="w-3.5 h-3.5" />
+                        <span>Safe Routes</span>
+                      </button>
 
-                    {/* Routes Button */}
-                    <button
-                      onClick={() => setActiveTab("routes")}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#0E1322] border border-[#1C253B] text-slate-200 hover:border-slate-500 hover:text-white transition-all cursor-pointer"
-                    >
-                      <Navigation className="w-3.5 h-3.5 text-blue-400" />
-                      <span>Routes</span>
-                    </button>
-
-                    {/* Share Button */}
-                    <button
-                      onClick={handleShareReport}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#0E1322] border border-[#1C253B] text-slate-200 hover:border-slate-500 hover:text-white transition-all cursor-pointer"
-                    >
-                      {copiedNotification ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-emerald-300">Copied!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Share2 className="w-3.5 h-3.5" />
-                          <span>Share</span>
-                        </>
-                      )}
-                    </button>
+                      <button
+                        onClick={handleShareReport}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[11px] font-bold bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-white/20 transition-all cursor-pointer"
+                      >
+                        {copiedNotification ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="w-3.5 h-3.5" />
+                            <span>Share</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                {/* Top Section: Flood Risk Assessment + Weather Summary */}
+                {/* ── Quick Navigation Strip ── */}
+                <div className="flex items-center gap-1.5 p-1.5 rounded-xl bg-white/90 dark:bg-[#080B14]/90 border border-slate-200/60 dark:border-white/5 backdrop-blur-sm">
+                  {[
+                    { key: "dashboard", label: "Risk Overview", num: "1" },
+                    { key: "weather-telemetry", label: "Weather & Telemetry", num: "2" },
+                    { key: "risk-map", label: "Risk Map", num: "3" },
+                    { key: "alerts", label: "Alerts", num: "4" },
+                    { key: "routes", label: "Evacuation Routes", num: "5" },
+                    { key: "reports", label: "Reports", num: "6" },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      onClick={() => setActiveTab(item.key as NavTab)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                        activeTab === item.key
+                          ? "bg-[#FF5A1F] text-white shadow-sm shadow-[#FF5A1F]/20"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      <span className={`text-[9px] font-black w-4 h-4 rounded flex items-center justify-center ${
+                        activeTab === item.key
+                          ? "bg-white/20"
+                          : "bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-500"
+                      }`}>{item.num}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── Row 1: Risk Assessment + Weather Summary ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  {/* Big Risk Summary Card (Gauge + Drivers) */}
                   <div className="lg:col-span-8">
                     {prediction ? (
                       <RiskSummaryCard data={prediction} />
                     ) : (
-                      <div className="h-64 rounded-2xl bg-white/[0.03] animate-pulse border border-white/10" />
+                      <div className="h-64 rounded-2xl bg-slate-100 dark:bg-white/[0.03] animate-pulse border border-slate-200 dark:border-white/10" />
                     )}
                   </div>
 
-                  {/* Weather Now & Rainfall Summary Table */}
                   <div className="lg:col-span-4">
-                    <WeatherSummaryCard rainfallNow={features.rainfall_mm} />
+                    <WeatherSummaryCard
+                      rainfallNow={features.rainfall_mm}
+                      rainfall1d={features.rainfall_1d}
+                      rainfall3d={features.rainfall_3d}
+                      rainfall7d={features.rainfall_7d}
+                      rainfall30d={features.rainfall_30d}
+                      districtName={selectedDistrict}
+                      onViewDetails={() => setActiveTab("weather-telemetry")}
+                    />
                   </div>
                 </div>
 
-                {/* Middle Section: Catchment Map + SHAP Factors + Exposure */}
+                {/* ── Row 2: Catchment Map + SHAP Factors + Exposure Impact ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  {/* Central Catchment Risk Map */}
                   <div className="lg:col-span-5">
                     <RiskMapCard
                       selectedState={selectedState}
@@ -457,43 +505,45 @@ export default function Home() {
                     />
                   </div>
 
-                  {/* SHAP Main Factors (Top Contributors) */}
                   <div className="lg:col-span-4">
                     <ShapFactorsCard topDrivers={prediction?.top_drivers || []} />
                   </div>
 
-                  {/* Exposure & Population Impact (Est.) */}
                   <div className="lg:col-span-3">
                     <ExposureImpactCard />
                   </div>
                 </div>
 
-                {/* Bottom Section: Hydrology + Alert Panel + Rainfall Timeline */}
+                {/* ── Row 3: Hydrology + Alert Panel + Rainfall Timeline ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  {/* Hydrological Status */}
-                  <div className="lg:col-span-3">
-                    <HydrologyCard
-                      riverName={mockHydrology.river_name}
-                      currentLevel={mockHydrology.current_level_m}
-                      dangerLevel={mockHydrology.danger_level_m}
-                      trend={mockHydrology.trend}
-                      rateCmHr={mockHydrology.rate_cm_hr}
-                    />
+                  <div className="lg:col-span-4">
+                    {(() => {
+                      const districtProfile = DISTRICT_PROFILES[selectedDistrict] || DISTRICT_PROFILES["Cachar"];
+                      const currentRiverLevel = parseFloat((districtProfile.baseRiverLevelMeters + (features.rainfall_mm > 10 ? 1.35 : 0.55)).toFixed(2));
+                      return (
+                        <HydrologyCard
+                          riverName={districtProfile.riverName}
+                          currentLevel={currentRiverLevel}
+                          warningLevel={districtProfile.warningLevelMeters}
+                          dangerLevel={districtProfile.dangerLevelMeters}
+                          trend={features.rainfall_mm > 10 ? "rising" : "stable"}
+                          rateCmHr={features.rainfall_mm > 10 ? 4.2 : 1.2}
+                        />
+                      );
+                    })()}
                   </div>
 
-                  {/* Alert Panel & Action System */}
-                  <div className="lg:col-span-5">
+                  <div className="lg:col-span-4">
                     <AlertPanel
                       status={alertData?.status || "idle"}
                       threadId={alertData?.thread_id || "—"}
                       draftedMessage={
                         alertData?.drafted_message ||
-                        'Click "PREDICT RISK" on top to evaluate real-time telemetry, or click "Alerts" to draft emergency broadcast.'
+                        'System ready. Click "Trigger Alert" to broadcast emergency alerts to authorities and ground teams.'
                       }
                     />
                   </div>
 
-                  {/* Risk Forecast Timeline / Rainfall Chart */}
                   <div className="lg:col-span-4">
                     <RainfallChart data={mockRainfallTimeline} />
                   </div>

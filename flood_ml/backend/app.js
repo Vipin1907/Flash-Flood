@@ -13,9 +13,16 @@ const app = express();
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
+const corsOriginConfig =
+  !config.corsOrigin || config.corsOrigin === "*"
+    ? true
+    : config.corsOrigin.includes(",")
+    ? config.corsOrigin.split(",").map((s) => s.trim())
+    : config.corsOrigin;
+
 app.use(
   cors({
-    origin: config.corsOrigin,
+    origin: corsOriginConfig,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

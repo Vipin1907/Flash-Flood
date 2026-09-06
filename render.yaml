@@ -1,0 +1,63 @@
+services:
+  # -------------------------------------------------------------
+  # 1. Python FastAPI Machine Learning Microservice (XGBoost + SHAP + OSM)
+  # -------------------------------------------------------------
+  - type: web
+    name: flood-ml-service
+    runtime: python
+    rootDir: flood_ml
+    buildCommand: pip install --upgrade pip && pip install -r ml_service/requirements.txt
+    startCommand: cd ml_service && uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: GEMINI_API_KEY
+        sync: false
+
+  # -------------------------------------------------------------
+  # 2. Node.js Express API Gateway
+  # -------------------------------------------------------------
+  - type: web
+    name: flood-backend-gateway
+    runtime: node
+    rootDir: flood_ml/backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/v1/healthcheck
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: flood-ml-service
+          property: host
+
+  # -------------------------------------------------------------
+  # 3. Next.js 16 Web Dashboard Frontend
+  # -------------------------------------------------------------
+  - type: web
+    name: flood-frontend
+    runtime: node
+    rootDir: flood_ml/frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: flood-ml-service
+          property: host

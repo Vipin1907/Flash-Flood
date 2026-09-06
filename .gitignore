@@ -41,6 +41,9 @@ flood_ml/ml_service/training/data/raw_grid/raw/final_training_data.csv
 *.joblib
 *.h5
 *.onnx
+!flood_ml/ml_service/model_real_v2.pkl
+!flood_ml/ml_service/training/data/raw_grid/raw/model_real_v2.pkl
+
 
 # Cache & OS
 .DS_Store

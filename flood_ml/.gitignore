@@ -23,6 +23,10 @@ yarn-error.log*
 # Model artifacts (large binary files — store in DVC or cloud)
 *.pkl
 *.joblib
+!model_real_v2.pkl
+!ml_service/model_real_v2.pkl
+!ml_service/training/data/raw_grid/raw/model_real_v2.pkl
+
 
 # OS
 .DS_Store
